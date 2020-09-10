@@ -1,0 +1,271 @@
+-------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\alexw\Documents\GitHub\software_differences_paper\regression\diltiazem.log
+  log type:  text
+ opened on:   9 Sep 2020, 17:36:15
+
+. import delimited "diltiazem_for_stata.csv",clear
+(30 vars, 6930 obs)
+
+. do stata_mixed_effects_logistic_regression.do
+
+. encode supplier,gen(supp)
+
+. total numerator denominator, over(supp)
+
+Total estimation                    Number of obs    =    6930
+
+         EMIS: supp = EMIS
+    Microtest: supp = Microtest
+          TPP: supp = TPP
+       Vision: supp = Vision
+
+--------------------------------------------------------------
+        Over |      Total   Std. Err.     [95% Conf. Interval]
+-------------+------------------------------------------------
+numerator    |
+        EMIS |     209371   4239.127        201061      217681
+   Microtest |        176   56.52917       65.1855    286.8145
+         TPP |      45890   1668.931      42618.38    49161.62
+      Vision |       7949    640.072      6694.263    9203.737
+-------------+------------------------------------------------
+denominator  |
+        EMIS |    1163578   18041.69       1128211     1198945
+   Microtest |      18068    1628.67      14875.31    21260.69
+         TPP |     876712   16863.66      843654.1    909769.9
+      Vision |      86374   4481.667      77588.56    95159.44
+--------------------------------------------------------------
+
+. 
+. gen prop_logit =  logit(calc_value)
+(1376 missing values generated)
+
+. 
+. encode supplier,gen(supplier_)
+
+. encode regional_team_id,gen(regional_team_id_)
+
+. encode stp_id,gen(stp_id_)
+
+. encode pct_id,gen(pct_id_)
+
+. recode num_gps_sept min/1=1 2/max=0 .=0, gen(single_handed)
+(6493 differences between num_gps_sept and single_handed)
+
+. encode ruc11cd, gen(rural_urban_code)
+
+. *xtile volume = denominator,nq(5)
+. xtile over_65 = value_over_65,nq(5)
+
+. xtile under_18 = value_under_18,nq(5)
+
+. xtile long_term_health = value_long_term_health,nq(5)
+
+. xtile imd = value_imd, nq(5)
+
+. recode dispensing_patients 1/max=1
+(dispensing_patients: 993 changes made)
+
+. 
+. 
+. gen single_group = 1
+
+. meqrlogit numerator i.supplier_ || single_group:, binomial(denominator) or
+
+Refining starting values: 
+
+Iteration 0:   log likelihood = -180591.94  
+Iteration 1:   log likelihood = -180590.68  (not concave)
+Iteration 2:   log likelihood = -180590.34  (backed up)
+
+Performing gradient-based optimization: 
+
+Iteration 0:   log likelihood = -180590.34  (not concave)
+Iteration 1:   log likelihood = -180590.05  (not concave)
+Iteration 2:   log likelihood = -180589.76  (not concave)
+Iteration 3:   log likelihood = -180587.34  (not concave)
+Iteration 4:   log likelihood = -180585.81  
+Iteration 5:   log likelihood = -180585.78  
+Iteration 6:   log likelihood = -180585.78  
+
+Mixed-effects logistic regression               Number of obs      =      6930
+Binomial variable: denominator
+Group variable: single_group                    Number of groups   =         1
+
+                                                Obs per group: min =      6930
+                                                               avg =    6930.0
+                                                               max =      6930
+
+Integration points =   7                        Wald chi2(3)       =  69099.66
+Log likelihood = -180585.78                     Prob > chi2        =    0.0000
+
+------------------------------------------------------------------------------
+   numerator | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   supplier_ |
+  Microtest  |    .044831   .0033976   -40.97   0.000     .0386428    .0520101
+        TPP  |   .2517307   .0013514  -256.95   0.000     .2490959    .2543933
+     Vision  |   .4619382   .0055505   -64.28   0.000     .4511865    .4729461
+             |
+       _cons |   .2194189   .0005295  -628.49   0.000     .2183834    .2204592
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+  Random-effects Parameters  |   Estimate   Std. Err.     [95% Conf. Interval]
+-----------------------------+------------------------------------------------
+single_group: Identity       |
+                  var(_cons) |   1.54e-17   1.67e-11             0           .
+------------------------------------------------------------------------------
+LR test vs. logistic regression: chibar2(01) =     0.00 Prob>=chibar2 = 1.0000
+
+. 
+. meqrlogit numerator i.supplier_ ///
+>                 || pct_id_:, binomial(denominator) or
+
+Refining starting values: 
+
+Iteration 0:   log likelihood = -129521.48  
+Iteration 1:   log likelihood = -129162.33  
+Iteration 2:   log likelihood = -129156.87  
+
+Performing gradient-based optimization: 
+
+Iteration 0:   log likelihood = -129156.87  
+Iteration 1:   log likelihood = -129137.23  
+Iteration 2:   log likelihood = -129137.22  
+
+Mixed-effects logistic regression               Number of obs      =      6930
+Binomial variable: denominator
+Group variable: pct_id_                         Number of groups   =       191
+
+                                                Obs per group: min =         5
+                                                               avg =      36.3
+                                                               max =       173
+
+Integration points =   7                        Wald chi2(3)       =  38585.80
+Log likelihood = -129137.22                     Prob > chi2        =    0.0000
+
+------------------------------------------------------------------------------
+   numerator | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   supplier_ |
+  Microtest  |   .0500489   .0039692   -37.76   0.000     .0428439    .0584655
+        TPP  |   .2471394   .0019043  -181.41   0.000     .2434351    .2509001
+     Vision  |   .3004018   .0048829   -73.99   0.000     .2909823    .3101263
+             |
+       _cons |   .2101346   .0119909   -27.34   0.000     .1878994    .2350009
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+  Random-effects Parameters  |   Estimate   Std. Err.     [95% Conf. Interval]
+-----------------------------+------------------------------------------------
+pct_id_: Identity            |
+                  var(_cons) |   .6189111   .0638335      .5056344    .7575649
+------------------------------------------------------------------------------
+LR test vs. logistic regression: chibar2(01) =  1.0e+05 Prob>=chibar2 = 0.0000
+
+.                 
+. meqrlogit numerator i.supplier_ dispensing_patients i.over_65 i.under_18 i.long_term_health i.s
+> ingle_handed i.rural_urban_code i.imd ///
+>                 || pct_id_:, binomial(denominator) or
+
+Refining starting values: 
+
+Iteration 0:   log likelihood = -125172.73  (not concave)
+Iteration 1:   log likelihood = -124115.77  
+Iteration 2:   log likelihood = -123004.74  
+
+Performing gradient-based optimization: 
+
+Iteration 0:   log likelihood = -123004.74  
+Iteration 1:   log likelihood = -122666.86  
+Iteration 2:   log likelihood =  -122635.8  
+Iteration 3:   log likelihood = -122633.13  
+Iteration 4:   log likelihood = -122633.13  
+
+Mixed-effects logistic regression               Number of obs      =      6661
+Binomial variable: denominator
+Group variable: pct_id_                         Number of groups   =       189
+
+                                                Obs per group: min =         5
+                                                               avg =      35.2
+                                                               max =       172
+
+Integration points =   7                        Wald chi2(25)      =  42239.51
+Log likelihood = -122633.13                     Prob > chi2        =    0.0000
+
+-------------------------------------------------------------------------------------
+          numerator | Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+          supplier_ |
+         Microtest  |   .0514035   .0042085   -36.25   0.000     .0437827    .0603508
+               TPP  |   .2388849   .0019147  -178.63   0.000     .2351615    .2426674
+            Vision  |    .299549   .0048951   -73.77   0.000     .2901068    .3092984
+                    |
+dispensing_patients |   .8204403   .0075807   -21.42   0.000     .8057163    .8354335
+                    |
+            over_65 |
+                 2  |   .7908538   .0071991   -25.78   0.000      .776869    .8050903
+                 3  |   .7564213   .0080805   -26.13   0.000     .7407485    .7724258
+                 4  |   .7554953   .0089215   -23.74   0.000     .7382103    .7731852
+                 5  |   .7205704   .0098007   -24.09   0.000     .7016151    .7400378
+                    |
+           under_18 |
+                 2  |   1.077834   .0085529     9.45   0.000     1.061201    1.094729
+                 3  |     1.1632   .0100289    17.53   0.000     1.143709    1.183024
+                 4  |   1.064059   .0100578     6.57   0.000     1.044528    1.083956
+                 5  |   1.086314   .0116397     7.73   0.000     1.063738    1.109368
+                    |
+   long_term_health |
+                 2  |   .9384464   .0077147    -7.73   0.000     .9234471    .9536893
+                 3  |   .9764322   .0082858    -2.81   0.005     .9603266    .9928078
+                 4  |    .952374   .0084102    -5.53   0.000     .9360321    .9690011
+                 5  |   .9227682   .0085935    -8.63   0.000      .906078    .9397658
+                    |
+    1.single_handed |   1.216465   .0149936    15.90   0.000      1.18743    1.246209
+                    |
+   rural_urban_code |
+                 B  |   .9122118   .0358419    -2.34   0.019     .8445997    .9852365
+                 C  |   .9129951   .0143138    -5.81   0.000     .8853673     .941485
+                 D  |   .8153787   .0142494   -11.68   0.000     .7879234    .8437908
+                 E  |   .6629761   .0148656   -18.33   0.000      .634471    .6927618
+                    |
+                imd |
+                 2  |   1.070021   .0083372     8.69   0.000     1.053805    1.086487
+                 3  |   1.098297    .009786    10.52   0.000     1.079283    1.117645
+                 4  |   1.153526   .0115972    14.21   0.000     1.131019    1.176482
+                 5  |   1.202316   .0139723    15.85   0.000     1.175241    1.230016
+                    |
+              _cons |   .2707068   .0152339   -23.22   0.000     .2424367    .3022735
+-------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+  Random-effects Parameters  |   Estimate   Std. Err.     [95% Conf. Interval]
+-----------------------------+------------------------------------------------
+pct_id_: Identity            |
+                  var(_cons) |   .5392972    .056047      .4399123    .6611351
+------------------------------------------------------------------------------
+LR test vs. logistic regression: chibar2(01) = 73912.83 Prob>=chibar2 = 0.0000
+
+. 
+. 
+. predict predictions_2,xb
+(269 missing values generated)
+
+. qui corr numerator predictions_2
+
+. di "R-squared - fixed effects (%): " round(r(rho)^2*100,.1)
+R-squared - fixed effects (%): 6.4
+
+. 
+. qui predict predictionsr1_2, reffects
+
+. qui corr prop_logit predictionsr1_2
+
+. di "R-squared - random effects (%): " round(r(rho)^2*100,.1)
+R-squared - random effects (%): 16.7
+
+. 
+end of do-file
+
+. cap log close

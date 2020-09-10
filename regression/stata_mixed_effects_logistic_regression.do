@@ -1,6 +1,5 @@
-cd "C:\Users\ajwalker\Documents\GitHub\software_differences_paper\regression"
-*import delimited "diltiazem_for_stata.csv",clear
-import delimited "ciclosporin_for_stata.csv",clear
+encode supplier,gen(supp)
+total numerator denominator, over(supp)
 
 gen prop_logit =  logit(calc_value)
 
